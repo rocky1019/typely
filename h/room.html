@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Focusly Typing — Online</title>
+<style>
+  :root {
+    --bg: #0f1724;
+    --card: #0b1220;
+    --accent: #7b68ee;
+    --muted: #94a3b8;
+    --good: #16a34a;
+    --bad: #ef4444;
+    --glass: rgba(255, 255, 255, 0.03);
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  }
+
+  * { box-sizing: border-box }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, #071028 0%, #071824 100%);
+    color: #e6eef8;
+  }
+
+  .wrap {
+    width: min(920px, 96%);
+    padding: 20px;
+    border-radius: 12px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+    box-shadow: 0 6px 40px 0 rgba(2, 6, 23, 0.7);
+  }
+
+  header {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  h1 {
+    font-size: 24px;
+    margin: 0;
+    letter-spacing: 0.8px;
+  }
+
+  .controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+select, button {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--card);   /* instead of var(--glass) */
+  color: #fff;               /* force white text */
+}
+
+select option {
+  background: var(--card);   /* dark options */
+  color: #fff;
+}
+
+
+  button.primary {
+    background: linear-gradient(90deg, var(--accent), #5a47d6);
+    border: none;
+    color: white;
+    font-weight: 600;
+    transition: opacity .1s;
+  }
+  button.primary:hover { opacity: .92; }
+  button:not(.primary):hover, select:hover { background: rgba(123, 104, 238, 0.12); }
+
+  main {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: 1fr 260px;
+    gap: 16px;
+  }
+
+  .card {
+    background: rgba(255, 255, 255, 0.025);
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+  }
+
+  .text-view {
+    min-height: 160px;
+    padding: 14px;
+    font-size: 18px;
+    line-height: 1.6;
+    border-radius: 8px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.10), transparent);
+  }
+
+  .char.correct { color: var(--good) }
+  .char.incorrect { color: var(--bad); text-decoration: line-through; }
+  .char.current {
+    background: rgba(255,255,255,0.12);
+    border-bottom: 2px solid var(--accent);
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
+
+  #inputArea {
+    width: 100%;
+    margin-top: 12px;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    background: transparent;
+    color: inherit;
+    font-size: 16px;
+    outline: none;
+    resize: none;
+    min-height: 80px;
+  }
+  #inputArea:disabled { background: rgba(124, 104, 238, 0.06); }
+
+  .stats { display: flex; gap: 8px; flex-direction: column; }
+  .stat-row { display: flex; gap: 8px; justify-content: space-between; padding: 6px 0; font-size: 14px; color: var(--muted); }
+  .big { font-size: 20px; font-weight: 700; color: #fff }
+
+  .progress {
+    height: 10px;
+    width: 100%;
+    background: rgba(255,255,255,0.03);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), #5a47d6);
+    transition: width .3s cubic-bezier(.8,0,.2,1);
+  }
+
+  .right-col { display: flex; flex-direction: column; gap: 10px; }
+  .lesson-list { display: flex; flex-direction: column; gap: 7px; margin-top: 8px; }
+
+  .kbd {
+    font-family: monospace;
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.02);
+    display: inline-block;
+    color: var(--muted)
+  }
+
+  .lesson-preview { font-size: 13px; color: var(--muted); }
+  .lesson-title { font-weight: 700; }
+  .lesson-desc { font-size: 12px; color: #aaa; }
+
+  .confetti {
+    pointer-events: none;
+    position: fixed; left: 0; top: 0; width: 100vw; height: 100vh;
+    z-index: 99999;
+    display: none;
+    animation: fadeout 1.5s forwards;
+  }
+  @keyframes fadeout { 70% { opacity:1; } to { opacity:0; display:none; } }
+
+  footer { margin-top: 12px; text-align: right; color: var(--muted); font-size: 13px }
+  @media (max-width:820px){ main { grid-template-columns:1fr; } .right-col { order:2 } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Typely Typing</h1>
+    <div class="controls">
+      <button onclick="login()">Login</button>
+      <button onclick="logout()">Logout</button>
+      <span id="userDisplay">Not logged in</span>
+      <label class="kbd">Lesson</label>
+      <select id="lessonSelect"></select>
+      <button id="startBtn" class="primary">Start</button>
+      <button id="resetBtn">Reset</button>
+          <a href="dashboard.html"><button class="primary">Home</button></a>
+
+    </div>
+  </header>
+  <main>
+    <section>
+      <div class="card">
+        <div class="text-view" id="textView"></div>
+        <textarea id="inputArea" placeholder="Start typing here..." autocomplete="off" spellcheck="false"></textarea>
+        <div style="display:flex;gap:12px;margin-top:8px;align-items:center;">
+          <div class="progress"><div class="bar" id="progressBar"></div></div>
+          <div style="min-width:120px;text-align:right;color:var(--muted);font-size:13px;" id="mini">0 / 0 chars</div>
+        </div>
+      </div>
+    </section>
+    <aside class="right-col">
+      <div class="card stats">
+        <div class="stat-row"><div>Time</div><div class="big" id="timeDisplay">00:00</div></div>
+        <div class="stat-row"><div>WPM</div><div class="big" id="wpm">0</div></div>
+        <div class="stat-row"><div>Accuracy</div><div class="big" id="acc">100%</div></div>
+        <div class="stat-row"><div>Correct / Total</div><div class="big" id="correctTotal">0 / 0</div></div>
+      </div>
+      <div class="card">
+        <div style="font-weight:700">Lessons</div>
+        <div class="lesson-list" id="lessonInfo"></div>
+      </div>
+    </aside>
+  </main>
+  <footer>Now online-enabled 🚀 — login & your results will be saved</footer>
+</div>
+<div class="confetti" id="confetti"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+const firebaseConfig = { 
+  apiKey: "AIzaSyDWvTfK3JlGNampfkOb-tOQN6jMIcFHja0",
+  authDomain: "focusly-typing.firebaseapp.com",
+  projectId: "focusly-typing",
+  storageBucket: "focusly-typing.firebasestorage.app",
+  messagingSenderId: "641626023018",
+  appId: "1:641626023018:web:c10016647bd32eb30c5613",
+  measurementId: "G-RYEM86ZQSH"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// Redirect if not logged in
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href = "login.html";
+  } else {
+    const display = document.getElementById("userDisplay");
+    if (display) display.textContent = "Hi, " + (user.displayName || "User");
+  }
+});
+
+// Logout
+window.logout = async () => {
+  await signOut(auth);
+  window.location.href = "login.html";
+};
+
+// Save session after finishing
+window.saveSession = async (lessonId, wpm, accuracy, correct, total) => {
+  if (!auth.currentUser) return;
+  const uid = auth.currentUser.uid;
+
+  await addDoc(collection(db, "users", uid, "sessions"), {
+    lessonId, wpm, accuracy, correct, total, date: serverTimestamp()
+  });
+
+  await setDoc(doc(db, "leaderboard", uid), {
+    displayName: auth.currentUser.displayName || "User",
+    bestWPM: wpm,
+    bestAccuracy: accuracy,
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+
+  console.log("Session saved for", uid);
+};
+
+</script>
+
+
+<!-- Typing Logic (unchanged, just calls saveSession at finish) -->
+<script>
+/* ======= Lessons ======= */
+const lessons = [
+  { id:'home-easy', title:'Home row left', desc:'Practice basic ASDF series', text:'asdf asdf asdf asdf asdf' },
+  { id:'home-easy-2', title:'Home row right', desc:'Practice JKL; pattern', text:'jkl; jkl; jkl; jkl; jkl;' },
+  { id:'home-mixed', title:'Home row mixed', desc:'Mixing home row keys for flow', text:'asdf jkl; asdf jkl; asdf jkl; asdf jkl;' },
+  { id:'msword-1', title:'MS Word style', desc:'Practicing patterns for all fingers', text:'asdfgh ;lkjhg qwerty poiuyt zxcvbn mnbvcx' },
+  { id:'sentence-1', title:'Simple Sentence', desc:'Words that make sense', text:'Typing helps programming and writing. Practice daily to improve speed.' },
+  { id:'punctuation', title:'Punctuation Exercise', desc:'Practice with common symbols', text:'Why? When; did, he: stop! She said, "Try again." Practice every day.' },
+  { id:'quote-1', title:'Famous Quote', desc:'Classic test sentence', text:'The quick brown fox jumps over the lazy dog. Keep your hands relaxed.' },
+  { id:'code-1', title:'Code: JavaScript', desc:'Snippet for coders', text:"function greet(name) { console.log('Hello, ' + name + '!'); }" }
+];
+
+/* ======= State & Elements ======= */
+let state = { lessonIndex:0, started:false, startTime:null, timer:null, totalTyped:0, correctChars:0, finished:false };
+const lessonSelect=document.getElementById('lessonSelect');
+const startBtn=document.getElementById('startBtn');
+const resetBtn=document.getElementById('resetBtn');
+const textView=document.getElementById('textView');
+const inputArea=document.getElementById('inputArea');
+const progressBar=document.getElementById('progressBar');
+const timeDisplay=document.getElementById('timeDisplay');
+const wpmEl=document.getElementById('wpm');
+const accEl=document.getElementById('acc');
+const correctTotal=document.getElementById('correctTotal');
+const lessonInfo=document.getElementById('lessonInfo');
+const mini=document.getElementById('mini');
+
+/* populate lessons */
+lessons.forEach((l, idx) => {
+  const opt=document.createElement('option'); opt.value=idx; opt.innerText=l.title;
+  lessonSelect.appendChild(opt);
+  const d=document.createElement('div');
+  d.innerHTML=`<span class="lesson-title">${l.title}</span>
+    <span class="lesson-desc"> &nbsp;${l.desc||''}</span>
+    <div class="lesson-preview">${l.text.slice(0,56)}${l.text.length>56?'…':''}</div>`;
+  lessonInfo.appendChild(d);
+});
+
+/* render target text */
+function renderText(text){ textView.innerHTML=''; for(let i=0;i<text.length;i++){ const span=document.createElement('span'); span.className='char'; span.dataset.index=i; span.textContent=text[i]; textView.appendChild(span);} setCurrentChar(0);}
+function setCurrentChar(idx){ const prev=textView.querySelector('.char.current'); if(prev) prev.classList.remove('current'); const cur=textView.querySelector(`.char[data-index="${idx}"]`); if(cur) cur.classList.add('current'); }
+
+/* load lesson */
+function loadLesson(index=0){ state={...state, lessonIndex:index, started:false,startTime:null,totalTyped:0,correctChars:0,finished:false};
+  lessonSelect.value=index; const lesson=lessons[index]; renderText(lesson.text);
+  inputArea.value=''; updateStats(); progressBar.style.width='0%'; inputArea.disabled=false; setTimeout(()=>inputArea.focus(),70); }
+
+/* timer */
+function startTimer(){ state.started=true; state.startTime=Date.now(); state.timer=setInterval(updateStats,250);}
+function stopTimer(){ clearInterval(state.timer); state.started=false; }
+function formatTime(ms){ const t=Math.floor(ms/1000); return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0'); }
+
+/* update stats */
+function updateStats(){ const l=lessons[state.lessonIndex]; const total=l.text.length; const typed=state.totalTyped; const correct=state.correctChars; const elapsed=state.started?(Date.now()-state.startTime):0;
+  timeDisplay.textContent=state.started?formatTime(elapsed):'00:00';
+  const mins=Math.max(0.01,elapsed/60000); const wpm=state.started?Math.round((correct/5)/mins):0; wpmEl.textContent=isFinite(wpm)?wpm:0;
+  const acc=typed===0?100:Math.round((correct/typed)*100); accEl.textContent=acc+'%';
+  correctTotal.textContent=`${correct} / ${total}`;
+  progressBar.style.width=Math.min(100,Math.round((correct/total)*100))+'%';
+  mini.textContent=`${typed} / ${total} chars`; }
+
+/* input handler */
+inputArea.addEventListener('input',()=>{ const l=lessons[state.lessonIndex]; if(!state.started) startTimer(); if(state.finished) return;
+  const v=inputArea.value; state.totalTyped=v.length; const spans=textView.querySelectorAll('.char'); let correctCount=0;
+  for(let i=0;i<spans.length;i++){ const ch=spans[i].textContent; const t=v[i]; spans[i].classList.remove('correct','incorrect'); if(t===undefined){} else if(t===ch){ spans[i].classList.add('correct'); correctCount++;} else{ spans[i].classList.add('incorrect');}}
+  state.correctChars=correctCount; setCurrentChar(Math.min(v.length,spans.length-1));
+  if(v.length>=spans.length){ state.finished=true; stopTimer(); inputArea.disabled=true; confettiEffect();
+    // 🔥 Save to Firebase
+    window.saveSession(l.id, Number(wpmEl.textContent), Number(accEl.textContent.replace('%','')), state.correctChars, l.text.length);
+  }
+  updateStats(); });
+
+/* controls */
+startBtn.addEventListener('click',()=>{ loadLesson(Number(lessonSelect.value)); inputArea.focus(); });
+resetBtn.addEventListener('click',()=>{ loadLesson(Number(lessonSelect.value)); });
+lessonSelect.addEventListener('change',()=>{ loadLesson(Number(lessonSelect.value)); });
+
+/* init */
+loadLesson(0);
+
+/* confetti */
+function confettiEffect(){ const c=document.getElementById('confetti'); c.style.display='block'; c.innerHTML=''; for(let i=0;i<44;i++){ const el=document.createElement('div'); el.style=`position:absolute;left:${Math.random()*100}vw;top:0; width:${8+Math.random()*6}px;height:${8+Math.random()*6}px;background:hsl(${Math.floor(Math.random()*360)},80%,70%); border-radius:50%; opacity:.9; transform:translateY(0); animation:cf .8s ${Math.random()/2}s cubic-bezier(.21,1.1,.37,.94) forwards;`; c.appendChild(el);} setTimeout(()=>{ c.style.display='none'; c.innerHTML=''; },1450);}
+</script>
+</body>
+</html>

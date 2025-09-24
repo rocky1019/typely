@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Login — Typely</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .auth-box {
+    width: 100%;
+    max-width: 360px;
+    text-align: center;
+    padding: 30px 20px;
+    animation: fadeIn .8s ease-out;
+  }
+  .auth-box h2 {
+    margin-bottom: 16px;
+    background: linear-gradient(90deg, var(--accent), #5a47d6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .auth-box input {
+    width: 100%;
+    margin: 8px 0;
+    padding: 10px;
+  }
+  .auth-box button {
+    width: 100%;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap auth-box card">
+  <h2>Welcome to Typely</h2>
+  <input type="text" id="username" placeholder="Username" />
+  <input type="password" id="password" placeholder="Password" />
+  <button class="primary" id="loginBtn">Login</button>
+  <button id="signupBtn">Sign up</button>
+  <p style="margin-top:12px;color:var(--muted);font-size:13px;">New here? Click "Sign up" to create your account.</p>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+
+const firebaseConfig = { 
+  apiKey: "AIzaSyDWvTfK3JlGNampfkOb-tOQN6jMIcFHja0",
+  authDomain: "focusly-typing.firebaseapp.com",
+  projectId: "focusly-typing",
+  storageBucket: "focusly-typing.firebasestorage.app",
+  messagingSenderId: "641626023018",
+  appId: "1:641626023018:web:c10016647bd32eb30c5613",
+  measurementId: "G-RYEM86ZQSH"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+document.getElementById("loginBtn").onclick = async () => {
+  const username = document.getElementById("username").value;
+  const pass = document.getElementById("password").value;
+  const fakeEmail = username + "@typely.app";
+
+  try {
+    await signInWithEmailAndPassword(auth, fakeEmail, pass);
+    window.location.href = "dashboard.html";
+  } catch (e) {
+    alert(e.message);
+  }
+};
+
+</script>
+</body>
+</html>

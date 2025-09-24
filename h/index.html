@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Typely — Master Typing Fast</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  /* Extra landing-specific styles */
+  .hero {
+    text-align: center;
+    padding: 60px 20px;
+    animation: fadeIn 1.2s ease-out;
+  }
+  .hero h1 {
+    font-size: 2.4rem;
+    margin-bottom: 12px;
+    background: linear-gradient(90deg, var(--accent), #5a47d6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .hero p {
+    font-size: 1.2rem;
+    color: var(--muted);
+    max-width: 600px;
+    margin: 0 auto 20px;
+  }
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin: 40px 0;
+  }
+  .feature-card {
+    text-align: center;
+    padding: 20px;
+    transition: transform 0.3s ease, background 0.3s ease;
+  }
+  .feature-card:hover {
+    transform: translateY(-5px);
+    background: rgba(123,104,238,0.08);
+  }
+  .feature-icon {
+    font-size: 2rem;
+    margin-bottom: 10px;
+  }
+  .leader-preview {
+    margin: 40px 0;
+    text-align: center;
+  }
+  .leader-preview h2 {
+    margin-bottom: 16px;
+  }
+  .leader-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 auto;
+    max-width: 300px;
+    text-align: left;
+  }
+  .leader-list li {
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .cta {
+    text-align: center;
+    margin: 50px 0;
+    animation: slideUp 1s ease-out;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>⚡ Typely Typing</h1>
+    <div class="controls">
+      <a href="login.html"><button class="primary">Login / Sign up</button></a>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <h1>Type Smarter. Type Faster.</h1>
+    <p>Join Focusly Typing — the fastest way to build real typing speed with fun lessons, live progress tracking, and global competition.</p>
+    <a href="login.html"><button class="primary">Get Started →</button></a>
+  </section>
+
+  <!-- Features -->
+  <section>
+    <div class="feature-grid">
+      <div class="card feature-card">
+        <div class="feature-icon">🎯</div>
+        <h3>Structured Lessons</h3>
+        <p>Practice basics, sentences, punctuation, and even code snippets tailored for programmers.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Track Your Growth</h3>
+        <p>Automatic WPM & accuracy tracking, streaks, and charts to stay motivated.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="feature-icon">🏆</div>
+        <h3>Global Leaderboard</h3>
+        <p>Compete with others worldwide and see where you rank among the fastest typers.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Instant Feedback</h3>
+        <p>Real-time highlights for correct and incorrect keys — learn without guesswork.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Leaderboard preview -->
+  <section class="leader-preview">
+    <h2>🔥 Top Typers Today</h2>
+    <ol class="leader-list" id="leaderPreview">
+      <li>Loading...</li>
+    </ol>
+    <a href="leaderboard.html"><button>See Full Leaderboard</button></a>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta">
+    <h2>Ready to level up your typing?</h2>
+    <a href="login.html"><button class="primary" style="font-size:1.1rem;padding:12px 20px;">Join Now Free</button></a>
+  </section>
+
+  <footer>© 2025 Focusly • Master typing the smart way</footer>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+import { getFirestore, collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+const firebaseConfig = { 
+  apiKey: "AIzaSyDWvTfK3JlGNampfkOb-tOQN6jMIcFHja0",
+  authDomain: "focusly-typing.firebaseapp.com",
+  projectId: "focusly-typing",
+  storageBucket: "focusly-typing.firebasestorage.app",
+  messagingSenderId: "641626023018",
+  appId: "1:641626023018:web:c10016647bd32eb30c5613",
+  measurementId: "G-RYEM86ZQSH"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Fetch leaderboard preview
+const q = query(collection(db, "leaderboard"), orderBy("bestWPM", "desc"), limit(5));
+const snap = await getDocs(q);
+let html = "";
+snap.forEach((doc) => {
+  const d = doc.data();
+  html += `<li>${d.displayName || "Anonymous"} — ${d.bestWPM} WPM</li>`;
+});
+document.getElementById("leaderPreview").innerHTML = html || "<li>No data yet</li>";
+</script>
+</body>
+</html>
